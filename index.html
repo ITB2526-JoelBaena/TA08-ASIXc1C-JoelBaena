@@ -12,7 +12,7 @@
     <section id="view-calculadora" class="view active">
         <div class="dashboard-header">
             <h2 class="text-blue">Calculadora</h2>
-            <button type="button" class="btn-primary" onclick="canviarVista('view-info')">Veure Detalls de les Mesures</button>
+            <button type="button" class="btn-primary" onclick="canviarVista('view-info')">Veure Informació i Context</button>
         </div>
 
         <div class="dashboard-grid">
@@ -26,8 +26,14 @@
             </div>
 
             <div class="panel-box border-top-blue grid-proj">
-                <h3 class="title-blue">2. Projecció a Futur (Màxim 3 Anys)</h3>
-                <p class="small-text">Des de l'últim registre auditat (17/01/2025) fins al 17/01/2028.</p>
+                <h3 class="title-blue">2. Projecció a Futur</h3>
+                <p class="small-text">Calcula l'impacte amb botons ràpids o tram exacte.</p>
+                
+                <div class="proj-controls" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button type="button" class="btn-outline-blue active" id="btn-proj-1" onclick="setProjeccioRapida(1)">+ 1 Any</button>
+                    <button type="button" class="btn-outline-blue" id="btn-proj-3" onclick="setProjeccioRapida(3)">+ 3 Anys</button>
+                </div>
+
                 <div class="custom-date">
                     <div class="date-inputs">
                         <input type="date" id="data-inici" class="input-date" min="2025-01-17" max="2028-01-17" value="2025-01-17">
@@ -141,12 +147,43 @@
     <section id="view-info" class="view">
         <div class="container-center scrollable">
             <div class="info-box border-top-blue">
-                <div class="dashboard-header" style="border: none;">
-                    <h1 class="main-title text-blue">Informació i Mesures de Sostenibilitat</h1>
+                
+                <div class="dashboard-header" style="border: none; padding-bottom: 0;">
+                    <h1 class="main-title text-blue">Context de l'ITB i Mesures de Sostenibilitat</h1>
                     <button type="button" class="btn-primary" onclick="canviarVista('view-calculadora')">Tornar a la Calculadora</button>
                 </div>
                 <hr>
                 
+                <div class="text-content">
+                    <p>L'Institut Tecnològic de Barcelona requereix una infraestructura tecnològica intensiva. L'anàlisi de l'auditoria interna (<em>ITB Leaks</em>) reflecteix un centre amb desenes d'aules amb una ràtio de 30-32 ordinadors, tallers amb 7 racks servidors en funcionament continu i una despesa considerable en manteniment i subministraments de papereria i neteja.</p>
+                    <p>La diagnosi inicial estableix les següents mètriques de despesa mensual base:</p>
+                </div>
+                
+                <div class="stats-overview">
+                    <div class="stat-card border-theme-elec">
+                        <span class="stat-value text-theme-elec">6.000</span>
+                        <span class="stat-unit">kWh / mes</span>
+                        <span class="stat-label">Consum Elèctric</span>
+                    </div>
+                    <div class="stat-card border-theme-aigua">
+                        <span class="stat-value text-theme-aigua">135.000</span>
+                        <span class="stat-unit">Litres / mes</span>
+                        <span class="stat-label">Consum d'Aigua</span>
+                    </div>
+                    <div class="stat-card border-theme-oficina">
+                        <span class="stat-value text-theme-oficina">215</span>
+                        <span class="stat-unit">Euros / mes</span>
+                        <span class="stat-label">Material Oficina</span>
+                    </div>
+                    <div class="stat-card border-theme-neteja">
+                        <span class="stat-value text-theme-neteja">620</span>
+                        <span class="stat-unit">Euros / mes</span>
+                        <span class="stat-label">Productes Neteja</span>
+                    </div>
+                </div>
+
+                <h2 class="text-blue" style="margin-top: 40px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Detall dels Plans de Reducció</h2>
+
                 <div class="text-content">
                     <h3 class="text-theme-elec">⚡ Mesures d'Electricitat</h3>
                     <p><strong>Lluminàries LED:</strong> La substitució redueix fins a un 20% el consum en il·luminació. <br>
@@ -159,7 +196,7 @@
                     <h3 class="text-theme-aigua">💧 Mesures d'Aigua</h3>
                     <p><strong>Airejadors:</strong> Barregen aire i aigua, reduint un 15% el cabal sense perdre pressió a les aixetes. <br>
                     <strong>Doble Descàrrega WC:</strong> Redueix de 6 a 3 litres el consum per descàrrega als lavabos del centre. <br>
-                    <strong>Aigua de pluja:</strong> Útil per fregar i netejar patis, estalviant fins a un 30% d'aigua potable xarxa.</p>
+                    <strong>Aigua de pluja:</strong> Útil per fregar i netejar patis, estalviant fins a un 30% d'aigua potable de xarxa.</p>
                 </div>
 
                 <div class="text-content">
@@ -169,12 +206,13 @@
                     <strong>Retoladors recarregables:</strong> Disminueix dramàticament l'ús de plàstics d'un sol ús a les aules.</p>
                 </div>
 
-                <div class="text-content">
+                <div class="text-content" style="margin-bottom: 0;">
                     <h3 class="text-theme-neteja">🧹 Mesures de Neteja</h3>
                     <p><strong>Assecadors Elèctrics:</strong> Elimina el cost del paper eixugamans (-40% cost neteja), tot i apujar lleugerament la llum. <br>
                     <strong>Sabons a granel:</strong> Reducció d'envasos plàstics i estalvi econòmic del 15%. <br>
-                    <strong>Certificació Ecolabel:</strong> Assegura que els químics no contaminen la xarxa d'aigües residuals de Barcelona.</p>
+                    <strong>Certificació Ecolabel:</strong> Assegura que els químics no contaminen la xarxa d'aigües residuals.</p>
                 </div>
+
             </div>
         </div>
     </section>
