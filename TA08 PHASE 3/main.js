@@ -1,14 +1,6 @@
 // 1. DADES BASE I VARIABLES
-const baseData = {
-    elec: 6000,    // kWh
-    aigua: 135000, // Litres
-    oficina: 215,  // Euros
-    neteja: 620    // Euros
-};
-
-// PREUS REALS: Elec (0.20€/kWh), Aigua (0.0025€/Litre)
+const baseData = { elec: 6000, aigua: 135000, oficina: 215, neteja: 620 };
 const costs = { elec: 0.20, aigua: 0.0025, oficina: 1, neteja: 1 };
-
 const estacionalitat = {
     elec: [1.3, 1.3, 1.1, 1.0, 0.9, 0.9, 0.8, 0.8, 0.9, 1.0, 1.2, 1.3],
     aigua:[0.9, 0.9, 1.0, 1.0, 1.1, 1.2, 1.2, 0.8, 1.1, 1.0, 0.9, 0.9],
@@ -19,9 +11,9 @@ const estacionalitat = {
 let modeActual = 'any';
 let chartInstance = null;
 
-// Límits del calendari segons els arxius ITB Leaks
-const MIN_DATE = new Date('2024-02-25');
-const MAX_DATE = new Date('2025-01-17');
+// Límits del calendari de projecció (Des de fi ITB leaks fins 3 anys)
+const MIN_PROJ = new Date('2025-01-17');
+const MAX_PROJ = new Date('2028-01-17');
 
 // 2. INICIALITZACIÓ
 window.onload = () => {
@@ -29,7 +21,7 @@ window.onload = () => {
     actualitzarSimulacio();
 };
 
-// 3. NAVEGACIÓ I PESTANYES
+// 3. NAVEGACIÓ
 function canviarVista(vistaId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(vistaId).classList.add('active');
@@ -38,7 +30,6 @@ function canviarVista(vistaId) {
 function obrirPestanya(tabId) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
     document.getElementById(tabId).classList.add('active');
     event.currentTarget.classList.add('active');
 }
@@ -47,10 +38,8 @@ function obrirPestanya(tabId) {
 function setPeriode(mode) {
     modeActual = mode;
     document.querySelectorAll('.time-controls button').forEach(b => b.classList.remove('active'));
-
     if (mode === 'any') document.getElementById('btn-any').classList.add('active');
     if (mode === 'curs') document.getElementById('btn-curs').classList.add('active');
-
     actualitzarSimulacio();
 }
 
@@ -59,50 +48,57 @@ function actualitzarSimulacio() {
     let raw = { elec: 0, aigua: 0, oficina: 0, neteja: 0 };
     let titol = "";
 
-    // 5.1 Càlcul temporal base
+    // 5.1 Càlcul base d'un any o un curs escolar
     if (modeActual === 'any') {
-        titol = "Calculant: Any Complet (12 mesos)";
+        titol = "Base: Any Complet";
         Object.keys(raw).forEach(k => {
             for(let m=0; m<12; m++) raw[k] += baseData[k] * estacionalitat[k][m];
         });
     }
     else if (modeActual === 'curs') {
-        titol = "Calculant: Curs Escolar (Set-Jun)";
+        titol = "Base: Curs Escolar";
         let mesos = [8,9,10,11,0,1,2,3,4,5];
         Object.keys(raw).forEach(k => {
             mesos.forEach(m => raw[k] += baseData[k] * estacionalitat[k][m]);
         });
     }
-    else if (modeActual === 'custom') {
-        let d1 = document.getElementById('data-inici').value;
-        let d2 = document.getElementById('data-fi').value;
-        if(d1 && d2) {
-            let date1 = new Date(d1);
-            let date2 = new Date(d2);
 
-            // Validació dels límits de dades dels ITB Leaks
-            if(date1 < MIN_DATE || date2 > MAX_DATE) {
-                titol = "Error: Les dades només existeixen entre 25/02/2024 i 17/01/2025";
-                document.getElementById('titol-resultats').innerText = titol;
-                return;
-            }
+    // 5.2 Multiplicador de Projecció Temporal
+    let d1 = document.getElementById('data-inici').value;
+    let d2 = document.getElementById('data-fi').value;
+    let anysProjeccio = 1;
+    let textProjeccio = "1 any";
 
-            let dies = (date2 - date1) / 86400000 + 1;
-            if(dies > 0) {
-                titol = `Calculant: Tram personalitzat (${dies} dies)`;
-                let mesosEq = dies / 30.44;
-                Object.keys(raw).forEach(k => {
-                    let mitjanaM = estacionalitat[k].reduce((a, b) => a + b) / 12;
-                    raw[k] = baseData[k] * mesosEq * mitjanaM;
-                });
-            } else { titol = "Error: La data inicial ha de ser menor"; return; }
-        } else { titol = "Calculant: Selecciona dates i prem Calcular"; }
+    if(d1 && d2) {
+        let date1 = new Date(d1);
+        let date2 = new Date(d2);
+
+        if(date1 < MIN_PROJ || date2 > MAX_PROJ) {
+            document.getElementById('titol-resultats').innerText = "Error: La projecció només és vàlida de 17/01/25 a 17/01/28";
+            return;
+        }
+
+        let dies = (date2 - date1) / 86400000;
+        if(dies > 0) {
+            anysProjeccio = dies / 365.25;
+            textProjeccio = `${(dies/365.25).toFixed(1)} anys`;
+        } else if (dies === 0) {
+            anysProjeccio = 1 / 365.25;
+            textProjeccio = "1 dia";
+        } else {
+            document.getElementById('titol-resultats').innerText = "Error: Data d'inici posterior a data fi";
+            return;
+        }
     }
 
-    // Cost original per comparar estalvis
+    titol += ` | Projecció: ${textProjeccio}`;
+
+    // Multipliquem la base pels anys de projecció per calcular el cost futur
+    Object.keys(raw).forEach(k => { raw[k] *= anysProjeccio; });
+
     let totalOriginal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
 
-    // 5.2 Multiplicadors d'estalvi
+    // 5.3 Multiplicadors d'estalvi de les mesures
     let pLed = document.getElementById('sl-led').value; document.getElementById('val-led').innerText = pLed;
     let pSolar = document.getElementById('sl-solar').value; document.getElementById('val-solar').innerText = pSolar;
     let pPluja = document.getElementById('sl-pluja').value; document.getElementById('val-pluja').innerText = pPluja;
@@ -136,13 +132,12 @@ function actualitzarSimulacio() {
     if(document.getElementById('chk-net-baietes').checked) mult.neteja *= 0.95;
     if(document.getElementById('chk-net-rutes').checked) mult.neteja *= 0.95;
 
-    // Apliquem l'estalvi a les xifres crues
     raw.elec *= mult.elec;
     raw.aigua *= mult.aigua;
     raw.oficina *= mult.oficina;
     raw.neteja *= mult.neteja;
 
-    // 5.3 Renderitzat xifres finals
+    // 5.4 Renderitzat de Resultats a la Pantalla
     document.getElementById('titol-resultats').innerText = titol;
     document.getElementById('res-elec').innerText = raw.elec.toLocaleString('ca-ES', {maximumFractionDigits: 0});
     document.getElementById('res-aigua').innerText = raw.aigua.toLocaleString('ca-ES', {maximumFractionDigits: 0});
@@ -154,17 +149,17 @@ function actualitzarSimulacio() {
     if(totalOriginal > 0) percentatgeEstalvi = ((totalOriginal - totalNou) / totalOriginal) * 100;
     document.getElementById('res-estalvi').innerText = `-${percentatgeEstalvi.toFixed(1)}%`;
 
-    // 5.4 Actualització reactiva del gràfic
+    // 5.5 Gràfica projectada en el temps
     if(chartInstance) {
-        chartInstance.data.datasets[0].data = estacionalitat.elec.map(e => baseData.elec * e * costs.elec * mult.elec);
-        chartInstance.data.datasets[1].data = estacionalitat.aigua.map(e => baseData.aigua * e * costs.aigua * mult.aigua);
-        chartInstance.data.datasets[2].data = estacionalitat.oficina.map(e => baseData.oficina * e * mult.oficina);
-        chartInstance.data.datasets[3].data = estacionalitat.neteja.map(e => baseData.neteja * e * mult.neteja);
+        chartInstance.data.datasets[0].data = estacionalitat.elec.map(e => baseData.elec * e * costs.elec * mult.elec * anysProjeccio);
+        chartInstance.data.datasets[1].data = estacionalitat.aigua.map(e => baseData.aigua * e * costs.aigua * mult.aigua * anysProjeccio);
+        chartInstance.data.datasets[2].data = estacionalitat.oficina.map(e => baseData.oficina * e * mult.oficina * anysProjeccio);
+        chartInstance.data.datasets[3].data = estacionalitat.neteja.map(e => baseData.neteja * e * mult.neteja * anysProjeccio);
         chartInstance.update();
     }
 }
 
-// 6. GRÀFIC SENSE TACHADO EN LLEGENDA I AMB ANIMACIÓ FLUIDA
+// 6. GRÀFIC (Sense tachado i animació per defecte de Chart.js activada)
 function inicialitzarGrafic() {
     const ctx = document.getElementById('historicalChart').getContext('2d');
     const mesos = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
@@ -188,7 +183,6 @@ function inicialitzarGrafic() {
                     position: 'bottom',
                     labels: {
                         usePointStyle: true,
-                        // Generació de llegenda on evitem que es ratlli la lletra (strikethrough)
                         generateLabels: function(chart) {
                             const datasets = chart.data.datasets;
                             return datasets.map((dataset, i) => {
@@ -198,24 +192,17 @@ function inicialitzarGrafic() {
                                     fillStyle: isHidden ? 'transparent' : dataset.backgroundColor,
                                     strokeStyle: dataset.borderColor,
                                     lineWidth: 2,
-                                    hidden: false, // AIXÒ EVITA QUE ES TACHI EL TEXT
+                                    hidden: false,
                                     datasetIndex: i
                                 };
                             });
                         }
                     },
-                    // Comportament en fer clic a la llegenda
                     onClick: function(e, legendItem, legend) {
                         const index = legendItem.datasetIndex;
                         const ci = legend.chart;
-
-                        // Ocultem o mostrem la línia. Les funcions hide/show ja inclouen l'animació per defecte.
-                        if (ci.isDatasetVisible(index)) {
-                            ci.hide(index);
-                        } else {
-                            ci.show(index);
-                        }
-                        // Hem eliminat el ci.update() d'aquí per no tallar l'animació nativa.
+                        if (ci.isDatasetVisible(index)) { ci.hide(index); }
+                        else { ci.show(index); }
                     }
                 }
             },

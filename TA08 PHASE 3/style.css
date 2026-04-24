@@ -1,5 +1,4 @@
 :root {
-    /* Base Corporativa (Blau) */
     --primary: #1e3a8a;
     --primary-light: #3b82f6;
     --bg-dark: #f8fafc;
@@ -8,11 +7,10 @@
     --text-muted: #64748b;
     --border-color: #cbd5e1;
 
-    /* Colors Temàtics Específics */
-    --theme-elec: #eab308;    /* Groc Elèctric */
-    --theme-aigua: #0ea5e9;   /* Blau Aigua */
-    --theme-oficina: #ea580c; /* Taronja Oficina */
-    --theme-neteja: #0d9488;  /* Turquesa Neteja */
+    --theme-elec: #eab308;
+    --theme-aigua: #0ea5e9;
+    --theme-oficina: #ea580c;
+    --theme-neteja: #0d9488;
 }
 
 * { box-sizing: border-box; }
@@ -27,68 +25,66 @@ body {
     overflow: hidden;
 }
 
-/* Utilitats de Color Base */
 .text-blue { color: var(--primary); }
 .border-top-blue { border-top: 4px solid var(--primary) !important; }
-.title-blue { color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;}
+.title-blue { color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin: 0 0 10px 0; font-size: 1.1em;}
 
-/* Utilitats Temàtiques */
 .text-theme-elec { color: var(--theme-elec) !important; }
 .border-theme-elec { border-top: 4px solid var(--theme-elec); border-bottom: 1px dashed var(--theme-elec); }
-
 .text-theme-aigua { color: var(--theme-aigua) !important; }
 .border-theme-aigua { border-top: 4px solid var(--theme-aigua); border-bottom: 1px dashed var(--theme-aigua); }
-
 .text-theme-oficina { color: var(--theme-oficina) !important; }
 .border-theme-oficina { border-top: 4px solid var(--theme-oficina); border-bottom: 1px dashed var(--theme-oficina); }
-
 .text-theme-neteja { color: var(--theme-neteja) !important; }
 .border-theme-neteja { border-top: 4px solid var(--theme-neteja); border-bottom: 1px dashed var(--theme-neteja); }
 
-
-/* Vistes i Contenidors */
+/* Vistes */
 .view { display: none; height: 100vh; width: 100vw; }
 .view.active { display: block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.container-center { display: flex; justify-content: center; align-items: center; height: 100%; padding: 20px; }
-.info-box { background: var(--surface); padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); max-width: 900px; text-align: center; }
+.container-center { display: flex; justify-content: center; align-items: flex-start; height: 100%; padding: 20px; }
+.scrollable { overflow-y: auto; align-items: stretch; }
+.info-box { background: var(--surface); padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); max-width: 900px; width: 100%; margin: 0 auto;}
 .main-title { margin: 0 0 10px 0; font-size: 2.2em; }
-.subtitle { color: var(--text-muted); font-size: 1.1em; margin-bottom: 20px; }
-.text-content { text-align: justify; line-height: 1.6; margin-bottom: 30px; }
+.text-content { text-align: justify; line-height: 1.6; margin-bottom: 20px; }
+.text-content h3 { margin-bottom: 5px; }
+.text-content p { margin-top: 0; }
 
-/* Targetes Estadístiques Inici */
-.stats-overview { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 30px; }
-.stat-card { background: var(--bg-dark); padding: 20px 10px; border-radius: 6px; flex: 1; display: flex; flex-direction: column; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
-.stat-value { font-size: 1.8em; font-weight: bold; }
-.stat-unit { font-size: 0.85em; color: var(--text-muted); font-weight: bold; margin-bottom: 8px; }
-.stat-label { font-size: 0.9em; }
-
-/* Botons Generals */
+/* Botons */
 button { font-family: inherit; cursor: pointer; border: none; border-radius: 4px; transition: 0.2s; }
 .btn-primary { background: var(--primary); color: white; font-weight: bold; padding: 10px 20px; }
 .btn-primary:hover { background: var(--primary-light); }
-.btn-primary.large { padding: 15px 30px; font-size: 1.1em; }
 .btn-outline-blue { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; }
 .btn-outline-blue.active, .btn-outline-blue:hover { background: var(--primary); color: white; }
 .ml-10 { margin-left: 10px; }
 
-/* DASHBOARD */
-#view-calculadora { display: none; flex-direction: column; padding: 20px; }
-#view-calculadora.active { display: flex; }
-
+/* DASHBOARD CALCULADORA */
+#view-calculadora { display: flex; flex-direction: column; padding: 20px; }
 .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
-.dashboard-header h2 { margin: 0; font-size: 1.6em; }
+.dashboard-header h2 { margin: 0; font-size: 1.8em; }
 
-.dashboard-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; flex-grow: 1; min-height: 0; }
-.panel-col { display: flex; flex-direction: column; gap: 15px; height: 100%; }
+/* Grid 3 columnes */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.8fr;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    flex-grow: 1;
+    min-height: 0;
+}
+
 .panel-box { background: var(--surface); border-radius: 6px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
-.flex-grow { flex-grow: 1; }
-.panel-box h3 { margin: 0 0 10px 0; font-size: 1.1em; }
 .small-text { font-size: 0.85em; color: var(--text-muted); margin: 0 0 15px 0; }
 
-/* Controls de Temps */
-.time-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+.grid-config { grid-column: 1; grid-row: 1; }
+.grid-proj { grid-column: 2; grid-row: 1; }
+.grid-res { grid-column: 3; grid-row: 1 / span 2; }
+.grid-chart { grid-column: 1; grid-row: 2; }
+.grid-meas { grid-column: 2; grid-row: 2; }
+
+/* Controls Interiors */
+.time-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; } /* Ara un a sota de l'altre */
 .custom-date label { font-size: 0.9em; display: block; margin-bottom: 5px;}
 .date-inputs { display: flex; gap: 5px; align-items: center; }
 .input-date { padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; width: 100%;}
@@ -96,36 +92,32 @@ button { font-family: inherit; cursor: pointer; border: none; border-radius: 4px
 /* Gràfic */
 .chart-container { position: relative; flex-grow: 1; width: 100%; min-height: 250px; margin-top: 10px;}
 
-/* Pestanyes (Opacitat per efecte focus) */
+/* Pestanyes Mesures */
 .tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
 .tab-btn { background: transparent; padding: 10px 15px; border-bottom: 3px solid transparent; border-radius: 0; flex-grow: 1; transition: opacity 0.3s; }
 .tab-btn:hover { background: var(--bg-dark); }
-
 .tab-btn.tab-elec { color: var(--theme-elec); border-bottom-color: var(--theme-elec); opacity: 0.4; }
 .tab-btn.tab-aigua { color: var(--theme-aigua); border-bottom-color: var(--theme-aigua); opacity: 0.4; }
 .tab-btn.tab-oficina { color: var(--theme-oficina); border-bottom-color: var(--theme-oficina); opacity: 0.4; }
 .tab-btn.tab-neteja { color: var(--theme-neteja); border-bottom-color: var(--theme-neteja); opacity: 0.4; }
-
 .tab-btn.active { opacity: 1; font-weight: bold; }
 
 .tab-content-area { flex-grow: 1; display: flex; flex-direction: column; }
 .tab-panel { display: none; flex-direction: column; justify-content: space-evenly; flex-grow: 1; padding: 10px 5px; }
 .tab-panel.active { display: flex; animation: fadeIn 0.2s ease; }
 
-/* Controls Sliders/Toggles Temàtics */
 .measure-slider label { display: block; font-size: 0.95em; margin-bottom: 5px; font-weight: bold;}
 .measure-slider input[type=range] { width: 100%; cursor: pointer; }
 .measure-toggle label { display: flex; align-items: center; gap: 10px; font-size: 0.95em; cursor: pointer; }
 .measure-toggle input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
 
-/* Colors específics dels inputs segons pestanya */
 #tab-elec input[type=range], #tab-elec input[type=checkbox] { accent-color: var(--theme-elec); }
 #tab-aigua input[type=range], #tab-aigua input[type=checkbox] { accent-color: var(--theme-aigua); }
 #tab-oficina input[type=range], #tab-oficina input[type=checkbox] { accent-color: var(--theme-oficina); }
 #tab-neteja input[type=range], #tab-neteja input[type=checkbox] { accent-color: var(--theme-neteja); }
 
 /* Resultats Finals */
-.results-box { display: flex; flex-direction: column; justify-content: space-between; }
+.results-box { justify-content: space-between; }
 .final-results { display: flex; flex-direction: column; justify-content: space-evenly; flex-grow: 1; margin-bottom: 20px;}
 .res-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); background: var(--bg-dark); border-radius: 4px; }
 .res-label { font-weight: bold; font-size: 1.1em; color: var(--text-main); }

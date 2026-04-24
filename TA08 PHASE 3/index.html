@@ -3,182 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ITB | Anàlisi de Sostenibilitat</title>
+    <title>ITB | Calculadora de Sostenibilitat</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-    <section id="view-inici" class="view active">
-        <div class="container-center">
-            <div class="info-box border-top-blue">
-                <h1 class="main-title text-blue">Sistema d'Anàlisi i Sostenibilitat ITB</h1>
-                <p class="subtitle">Avaluació de l'impacte ambiental i propostes d'economia circular (Projecte Fase 3)</p>
-                <hr>
-                <div class="text-content">
-                    <p>L'Institut Tecnològic de Barcelona requereix una infraestructura tecnològica intensiva. L'anàlisi de l'auditoria interna (ITB Leaks) reflecteix un centre amb desenes d'aules amb una ràtio de 30-32 ordinadors, tallers amb 7 racks servidors en funcionament continu i una despesa considerable en manteniment i subministraments de papereria i neteja.</p>
-                    <p>La diagnosi inicial mensual estableix les següents mètriques base:</p>
-                </div>
-
-                <div class="stats-overview">
-                    <div class="stat-card border-theme-elec">
-                        <span class="stat-value text-theme-elec">6.000</span>
-                        <span class="stat-unit">kWh / mes</span>
-                        <span class="stat-label">Consum Elèctric</span>
-                    </div>
-                    <div class="stat-card border-theme-aigua">
-                        <span class="stat-value text-theme-aigua">135.000</span>
-                        <span class="stat-unit">Litres / mes</span>
-                        <span class="stat-label">Consum d'Aigua</span>
-                    </div>
-                    <div class="stat-card border-theme-oficina">
-                        <span class="stat-value text-theme-oficina">215</span>
-                        <span class="stat-unit">Euros / mes</span>
-                        <span class="stat-label">Material Oficina</span>
-                    </div>
-                    <div class="stat-card border-theme-neteja">
-                        <span class="stat-value text-theme-neteja">620</span>
-                        <span class="stat-unit">Euros / mes</span>
-                        <span class="stat-label">Productes Neteja</span>
-                    </div>
-                </div>
-
-                <div class="action-area">
-                    <button class="btn-primary large" onclick="canviarVista('view-calculadora')">Accedir a la Calculadora i Pla de Millores</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="view-calculadora" class="view">
+    <section id="view-calculadora" class="view active">
         <div class="dashboard-header">
-            <h2 class="text-blue">Panell de Control Integrat</h2>
-            <button class="btn-primary" onclick="canviarVista('view-inici')">Tornar a l'Inici</button>
+            <h2 class="text-blue">Calculadora</h2>
+            <button type="button" class="btn-primary" onclick="canviarVista('view-info')">Veure Detalls de les Mesures</button>
         </div>
 
         <div class="dashboard-grid">
 
-            <div class="panel-col">
-                <div class="panel-box border-top-blue">
-                    <h3 class="title-blue">1. Configuració del Període</h3>
-                    <div class="time-controls">
-                        <button class="btn-outline-blue active" id="btn-any" onclick="setPeriode('any')">Any Complet</button>
-                        <button class="btn-outline-blue" id="btn-curs" onclick="setPeriode('curs')">Curs Escolar</button>
-                    </div>
-                    <div class="custom-date">
-                        <label>O tram ITB Leaks (25/02/24 a 17/01/25):</label>
-                        <div class="date-inputs">
-                            <input type="date" id="data-inici" class="input-date" min="2024-02-25" max="2025-01-17">
-                            <span>-</span>
-                            <input type="date" id="data-fi" class="input-date" min="2024-02-25" max="2025-01-17">
-                            <button class="btn-primary ml-10" onclick="setPeriode('custom')">Calcular</button>
-                        </div>
-                    </div>
+            <div class="panel-box border-top-blue grid-config">
+                <h3 class="title-blue">1. Configuració del Període Base</h3>
+                <div class="time-controls">
+                    <button type="button" class="btn-outline-blue active" id="btn-any" onclick="setPeriode('any')">🌍 Any Complet (12m)</button>
+                    <button type="button" class="btn-outline-blue" id="btn-curs" onclick="setPeriode('curs')">🎓 Curs Escolar (Set-Jun)</button>
                 </div>
+            </div>
 
-                <div class="panel-box flex-grow border-top-blue">
-                    <h3 class="title-blue">2. Tendència Anual (Cost en €)</h3>
-                    <div class="chart-container">
-                        <canvas id="historicalChart"></canvas>
+            <div class="panel-box border-top-blue grid-proj">
+                <h3 class="title-blue">2. Projecció a Futur (Màxim 3 Anys)</h3>
+                <p class="small-text">Des de l'últim registre auditat (17/01/2025) fins al 17/01/2028.</p>
+                <div class="custom-date">
+                    <div class="date-inputs">
+                        <input type="date" id="data-inici" class="input-date" min="2025-01-17" max="2028-01-17" value="2025-01-17">
+                        <span>-</span>
+                        <input type="date" id="data-fi" class="input-date" min="2025-01-17" max="2028-01-17" value="2026-01-17">
+                        <button type="button" class="btn-primary ml-10" onclick="actualitzarSimulacio()">Calcular</button>
                     </div>
                 </div>
             </div>
 
-            <div class="panel-col">
-                <div class="panel-box flex-grow border-top-blue">
-                    <h3 class="title-blue">3. Aplicació de Mesures de Sostenibilitat</h3>
-                    <p class="small-text">Configura les accions per observar la reducció en el quadre de resultats i en la gràfica.</p>
+            <div class="panel-box border-top-blue grid-chart">
+                <h3 class="title-blue">3. Tendència Anual Projectada (Cost en €)</h3>
+                <div class="chart-container">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </div>
 
-                    <div class="tabs">
-                        <button class="tab-btn tab-elec active" onclick="obrirPestanya('tab-elec')">Electricitat</button>
-                        <button class="tab-btn tab-aigua" onclick="obrirPestanya('tab-aigua')">Aigua</button>
-                        <button class="tab-btn tab-oficina" onclick="obrirPestanya('tab-oficina')">Oficina</button>
-                        <button class="tab-btn tab-neteja" onclick="obrirPestanya('tab-neteja')">Neteja</button>
+            <div class="panel-box border-top-blue grid-meas">
+                <h3 class="title-blue">4. Aplicació de Mesures de Sostenibilitat</h3>
+
+                <div class="tabs">
+                    <button type="button" class="tab-btn tab-elec active" onclick="obrirPestanya('tab-elec')">Electricitat</button>
+                    <button type="button" class="tab-btn tab-aigua" onclick="obrirPestanya('tab-aigua')">Aigua</button>
+                    <button type="button" class="tab-btn tab-oficina" onclick="obrirPestanya('tab-oficina')">Oficina</button>
+                    <button type="button" class="tab-btn tab-neteja" onclick="obrirPestanya('tab-neteja')">Neteja</button>
+                </div>
+
+                <div class="tab-content-area">
+                    <div id="tab-elec" class="tab-panel active">
+                        <div class="measure-slider">
+                            <label>1. Substitució a lluminàries LED (<span id="val-led" class="text-theme-elec">0</span>%)</label>
+                            <input type="range" id="sl-led" min="0" max="100" value="0" oninput="actualitzarSimulacio()">
+                        </div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-elec-pc" onchange="actualitzarSimulacio()"> 2. Política d'apagat automàtic d'equips</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-elec-sensors" onchange="actualitzarSimulacio()"> 3. Instal·lació de sensors de presència</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-elec-clima" onchange="actualitzarSimulacio()"> 4. Bloqueig de termòstats a 24ºC</label></div>
+                        <div class="measure-slider">
+                            <label>5. Plaques solars instal·lades (<span id="val-solar" class="text-theme-elec">0</span>%)</label>
+                            <input type="range" id="sl-solar" min="0" max="50" value="0" oninput="actualitzarSimulacio()">
+                        </div>
                     </div>
 
-                    <div class="tab-content-area">
-                        <div id="tab-elec" class="tab-panel active">
-                            <div class="measure-slider">
-                                <label>1. Substitució a lluminàries LED (<span id="val-led" class="text-theme-elec">0</span>%)</label>
-                                <input type="range" id="sl-led" min="0" max="100" value="0" oninput="actualitzarSimulacio()">
-                            </div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-elec-pc" onchange="actualitzarSimulacio()"> 2. Política d'apagat automàtic d'equips inactius</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-elec-sensors" onchange="actualitzarSimulacio()"> 3. Instal·lació de sensors de presència als passadissos</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-elec-clima" onchange="actualitzarSimulacio()"> 4. Bloqueig de termòstats de climatització a 24ºC</label></div>
-                            <div class="measure-slider">
-                                <label>5. Dependència de plaques solars instal·lades (<span id="val-solar" class="text-theme-elec">0</span>%)</label>
-                                <input type="range" id="sl-solar" min="0" max="50" value="0" oninput="actualitzarSimulacio()">
-                            </div>
+                    <div id="tab-aigua" class="tab-panel">
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-aire" onchange="actualitzarSimulacio()"> 1. Instal·lació d'airejadors limitadors</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-wc" onchange="actualitzarSimulacio()"> 2. Cisternes de doble descàrrega</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-sensors" onchange="actualitzarSimulacio()"> 3. Aixetes amb sensor infraroig</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-fuites" onchange="actualitzarSimulacio()"> 4. Protocol de detecció de fuites</label></div>
+                        <div class="measure-slider">
+                            <label>5. Aprofitament aigua de pluja (<span id="val-pluja" class="text-theme-aigua">0</span>%)</label>
+                            <input type="range" id="sl-pluja" min="0" max="30" value="0" oninput="actualitzarSimulacio()">
                         </div>
+                    </div>
 
-                        <div id="tab-aigua" class="tab-panel">
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-aire" onchange="actualitzarSimulacio()"> 1. Instal·lació d'airejadors limitadors a totes les aixetes</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-wc" onchange="actualitzarSimulacio()"> 2. Renovació de cisternes a polsadors de doble descàrrega</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-sensors" onchange="actualitzarSimulacio()"> 3. Aixetes amb sensor infraroig temporitzat als lavabos</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-aigua-fuites" onchange="actualitzarSimulacio()"> 4. Protocol mensual de detecció i reparació de fuites</label></div>
-                            <div class="measure-slider">
-                                <label>5. Aprofitament aigua de pluja per reg i neteja (<span id="val-pluja" class="text-theme-aigua">0</span>%)</label>
-                                <input type="range" id="sl-pluja" min="0" max="30" value="0" oninput="actualitzarSimulacio()">
-                            </div>
+                    <div id="tab-oficina" class="tab-panel">
+                        <div class="measure-slider">
+                            <label>1. Digitalització (Zero Paper) (<span id="val-moodle" class="text-theme-oficina">0</span>%)</label>
+                            <input type="range" id="sl-moodle" min="0" max="100" value="0" oninput="actualitzarSimulacio()">
                         </div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-retoladors" onchange="actualitzarSimulacio()"> 2. Retoladors de pissarra recarregables</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-reciclat" onchange="actualitzarSimulacio()"> 3. Compra centralitzada paper reciclat</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-bn" onchange="actualitzarSimulacio()"> 4. Impressió per defecte a blanc/negre</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-signatures" onchange="actualitzarSimulacio()"> 5. Tràmits i signatures 100% digitals</label></div>
+                    </div>
 
-                        <div id="tab-oficina" class="tab-panel">
-                            <div class="measure-slider">
-                                <label>1. Digitalització (Zero Paper) via Moodle (<span id="val-moodle" class="text-theme-oficina">0</span>%)</label>
-                                <input type="range" id="sl-moodle" min="0" max="100" value="0" oninput="actualitzarSimulacio()">
-                            </div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-retoladors" onchange="actualitzarSimulacio()"> 2. Ús exclusiu de retoladors de pissarra recarregables</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-reciclat" onchange="actualitzarSimulacio()"> 3. Compra centralitzada exclusivament de paper reciclat</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-bn" onchange="actualitzarSimulacio()"> 4. Impressió per defecte forçada a blanc/negre i doble cara</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-ofi-signatures" onchange="actualitzarSimulacio()"> 5. Tràmits de secretaria i signatures 100% digitals</label></div>
+                    <div id="tab-neteja" class="tab-panel">
+                        <div class="measure-slider">
+                            <label>1. Assecadors elèctrics vs paper (<span id="val-asseca" class="text-theme-neteja">0</span>%)</label>
+                            <input type="range" id="sl-asseca" min="0" max="100" value="0" oninput="actualitzarSimulacio()">
                         </div>
-
-                        <div id="tab-neteja" class="tab-panel">
-                            <div class="measure-slider">
-                                <label>1. Migració a assecadors elèctrics vs paper (<span id="val-asseca" class="text-theme-neteja">0</span>%)</label>
-                                <input type="range" id="sl-asseca" min="0" max="100" value="0" oninput="actualitzarSimulacio()">
-                            </div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-net-granel" onchange="actualitzarSimulacio()"> 2. Adquisició de sabons i líquids en format granel concentrat</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-net-eco" onchange="actualitzarSimulacio()"> 3. Ús exclusiu de productes amb certificació Ecolabel</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-net-baietes" onchange="actualitzarSimulacio()"> 4. Substitució de material d'un sol ús per baietes reutilitzables</label></div>
-                            <div class="measure-toggle"><label><input type="checkbox" id="chk-net-rutes" onchange="actualitzarSimulacio()"> 5. Optimització de freqüències de neteja segons ocupació real</label></div>
-                        </div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-net-granel" onchange="actualitzarSimulacio()"> 2. Sabons en format granel concentrat</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-net-eco" onchange="actualitzarSimulacio()"> 3. Productes amb certificació Ecolabel</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-net-baietes" onchange="actualitzarSimulacio()"> 4. Substitució per baietes reutilitzables</label></div>
+                        <div class="measure-toggle"><label><input type="checkbox" id="chk-net-rutes" onchange="actualitzarSimulacio()"> 5. Optimització freqüències de neteja</label></div>
                     </div>
                 </div>
             </div>
 
-            <div class="panel-col">
-                <div class="panel-box results-box flex-grow border-top-blue">
-                    <h3 class="title-blue">4. Resultats Globals</h3>
-                    <p class="small-text" id="titol-resultats">Calculant: Any Complet</p>
+            <div class="panel-box results-box border-top-blue grid-res">
+                <h3 class="title-blue">5. Resultats Globals</h3>
+                <p class="small-text" id="titol-resultats">Calculant...</p>
 
-                    <div class="final-results">
-                        <div class="res-item border-theme-elec">
-                            <span class="res-label">Consum Elèctric</span>
-                            <div class="res-data"><span class="res-val text-theme-elec" id="res-elec">0</span> <span class="res-unit">kWh</span></div>
-                        </div>
-                        <div class="res-item border-theme-aigua">
-                            <span class="res-label">Consum d'Aigua</span>
-                            <div class="res-data"><span class="res-val text-theme-aigua" id="res-aigua">0</span> <span class="res-unit">L</span></div>
-                        </div>
-                        <div class="res-item border-theme-oficina">
-                            <span class="res-label">Material Oficina</span>
-                            <div class="res-data"><span class="res-val text-theme-oficina" id="res-oficina">0</span> <span class="res-unit">€</span></div>
-                        </div>
-                        <div class="res-item border-theme-neteja">
-                            <span class="res-label">Productes Neteja</span>
-                            <div class="res-data"><span class="res-val text-theme-neteja" id="res-neteja">0</span> <span class="res-unit">€</span></div>
-                        </div>
+                <div class="final-results">
+                    <div class="res-item border-theme-elec">
+                        <span class="res-label">Consum Elèctric</span>
+                        <div class="res-data"><span class="res-val text-theme-elec" id="res-elec">0</span> <span class="res-unit">kWh</span></div>
                     </div>
+                    <div class="res-item border-theme-aigua">
+                        <span class="res-label">Consum d'Aigua</span>
+                        <div class="res-data"><span class="res-val text-theme-aigua" id="res-aigua">0</span> <span class="res-unit">L</span></div>
+                    </div>
+                    <div class="res-item border-theme-oficina">
+                        <span class="res-label">Material Oficina</span>
+                        <div class="res-data"><span class="res-val text-theme-oficina" id="res-oficina">0</span> <span class="res-unit">€</span></div>
+                    </div>
+                    <div class="res-item border-theme-neteja">
+                        <span class="res-label">Productes Neteja</span>
+                        <div class="res-data"><span class="res-val text-theme-neteja" id="res-neteja">0</span> <span class="res-unit">€</span></div>
+                    </div>
+                </div>
 
-                    <div class="savings-card border-top-blue">
-                        <h4 class="text-blue">Impacte de les Millores</h4>
-                        <div class="savings-val text-blue" id="res-estalvi">0%</div>
-                        <p>Reducció global estimada respecte al consum base.</p>
-                    </div>
+                <div class="savings-card border-top-blue">
+                    <h4 class="text-blue">Impacte de les Millores</h4>
+                    <div class="savings-val text-blue" id="res-estalvi">0%</div>
+                    <p>Reducció global respecte al consum base, multiplicat pels anys projectats.</p>
                 </div>
             </div>
 
+        </div>
+    </section>
+
+    <section id="view-info" class="view">
+        <div class="container-center scrollable">
+            <div class="info-box border-top-blue">
+                <div class="dashboard-header" style="border: none;">
+                    <h1 class="main-title text-blue">Informació i Mesures de Sostenibilitat</h1>
+                    <button type="button" class="btn-primary" onclick="canviarVista('view-calculadora')">Tornar a la Calculadora</button>
+                </div>
+                <hr>
+
+                <div class="text-content">
+                    <h3 class="text-theme-elec">⚡ Mesures d'Electricitat</h3>
+                    <p><strong>Lluminàries LED:</strong> La substitució redueix fins a un 20% el consum en il·luminació. <br>
+                    <strong>Apagat Automàtic:</strong> L'ITB compta amb molts PCs; forçar l'apagat de nit estalvia un 15% energètic. <br>
+                    <strong>Sensors / Climatització:</strong> Bloquejar l'AC a 24ºC prevé pics d'energia a l'estiu i l'hivern. <br>
+                    <strong>Plaques Solars:</strong> A llarg termini, produeixen fins al 50% de l'energia diürna necessària.</p>
+                </div>
+
+                <div class="text-content">
+                    <h3 class="text-theme-aigua">💧 Mesures d'Aigua</h3>
+                    <p><strong>Airejadors:</strong> Barregen aire i aigua, reduint un 15% el cabal sense perdre pressió a les aixetes. <br>
+                    <strong>Doble Descàrrega WC:</strong> Redueix de 6 a 3 litres el consum per descàrrega als lavabos del centre. <br>
+                    <strong>Aigua de pluja:</strong> Útil per fregar i netejar patis, estalviant fins a un 30% d'aigua potable xarxa.</p>
+                </div>
+
+                <div class="text-content">
+                    <h3 class="text-theme-oficina">🖨️ Mesures d'Oficina</h3>
+                    <p><strong>Zero Paper / Moodle:</strong> Centralitzar els lliuraments evita la compra massiva de folis (estalvi del 50%). <br>
+                    <strong>Blanc i Negre:</strong> Evita la despesa innecessària en cartutxos de color per exàmens i circulars. <br>
+                    <strong>Retoladors recarregables:</strong> Disminueix dramàticament l'ús de plàstics d'un sol ús a les aules.</p>
+                </div>
+
+                <div class="text-content">
+                    <h3 class="text-theme-neteja">🧹 Mesures de Neteja</h3>
+                    <p><strong>Assecadors Elèctrics:</strong> Elimina el cost del paper eixugamans (-40% cost neteja), tot i apujar lleugerament la llum. <br>
+                    <strong>Sabons a granel:</strong> Reducció d'envasos plàstics i estalvi econòmic del 15%. <br>
+                    <strong>Certificació Ecolabel:</strong> Assegura que els químics no contaminen la xarxa d'aigües residuals de Barcelona.</p>
+                </div>
+            </div>
         </div>
     </section>
 
