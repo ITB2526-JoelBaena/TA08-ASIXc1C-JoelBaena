@@ -6,7 +6,7 @@ const baseData = {
     neteja: 620    // Euros
 };
 
-// PREUS REALS: Elec (0.20€/kWh), Aigua (0.0025€/Litre = 2.5€/m3)
+// PREUS REALS: Elec (0.20€/kWh), Aigua (0.0025€/Litre)
 const costs = { elec: 0.20, aigua: 0.0025, oficina: 1, neteja: 1 };
 
 const estacionalitat = {
@@ -18,7 +18,10 @@ const estacionalitat = {
 
 let modeActual = 'any';
 let chartInstance = null;
-const MIN_DATE = new Date('2024-02-25'); // Data límit dels ITB Leaks
+
+// Límits del calendari segons els arxius ITB Leaks
+const MIN_DATE = new Date('2024-02-25');
+const MAX_DATE = new Date('2025-01-17');
 
 // 2. INICIALITZACIÓ
 window.onload = () => {
@@ -51,11 +54,12 @@ function setPeriode(mode) {
     actualitzarSimulacio();
 }
 
-// 5. MOTOR DE CÀLCUL I ACTUALITZACIÓ
+// 5. MOTOR DE CÀLCUL PRINCIPAL
 function actualitzarSimulacio() {
     let raw = { elec: 0, aigua: 0, oficina: 0, neteja: 0 };
     let titol = "";
 
+    // 5.1 Càlcul temporal base
     if (modeActual === 'any') {
         titol = "Calculant: Any Complet (12 mesos)";
         Object.keys(raw).forEach(k => {
@@ -76,9 +80,9 @@ function actualitzarSimulacio() {
             let date1 = new Date(d1);
             let date2 = new Date(d2);
 
-            // Validació respecte als ITB Leaks
-            if(date1 < MIN_DATE) {
-                titol = "Error: Sense registres abans del 25/02/2024";
+            // Validació dels límits de dades dels ITB Leaks
+            if(date1 < MIN_DATE || date2 > MAX_DATE) {
+                titol = "Error: Les dades només existeixen entre 25/02/2024 i 17/01/2025";
                 document.getElementById('titol-resultats').innerText = titol;
                 return;
             }
@@ -95,8 +99,10 @@ function actualitzarSimulacio() {
         } else { titol = "Calculant: Selecciona dates i prem Calcular"; }
     }
 
+    // Cost original per comparar estalvis
     let totalOriginal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
 
+    // 5.2 Multiplicadors d'estalvi
     let pLed = document.getElementById('sl-led').value; document.getElementById('val-led').innerText = pLed;
     let pSolar = document.getElementById('sl-solar').value; document.getElementById('val-solar').innerText = pSolar;
     let pPluja = document.getElementById('sl-pluja').value; document.getElementById('val-pluja').innerText = pPluja;
@@ -130,11 +136,13 @@ function actualitzarSimulacio() {
     if(document.getElementById('chk-net-baietes').checked) mult.neteja *= 0.95;
     if(document.getElementById('chk-net-rutes').checked) mult.neteja *= 0.95;
 
+    // Apliquem l'estalvi a les xifres crues
     raw.elec *= mult.elec;
     raw.aigua *= mult.aigua;
     raw.oficina *= mult.oficina;
     raw.neteja *= mult.neteja;
 
+    // 5.3 Renderitzat xifres finals
     document.getElementById('titol-resultats').innerText = titol;
     document.getElementById('res-elec').innerText = raw.elec.toLocaleString('ca-ES', {maximumFractionDigits: 0});
     document.getElementById('res-aigua').innerText = raw.aigua.toLocaleString('ca-ES', {maximumFractionDigits: 0});
@@ -146,6 +154,7 @@ function actualitzarSimulacio() {
     if(totalOriginal > 0) percentatgeEstalvi = ((totalOriginal - totalNou) / totalOriginal) * 100;
     document.getElementById('res-estalvi').innerText = `-${percentatgeEstalvi.toFixed(1)}%`;
 
+    // 5.4 Actualització reactiva del gràfic
     if(chartInstance) {
         chartInstance.data.datasets[0].data = estacionalitat.elec.map(e => baseData.elec * e * costs.elec * mult.elec);
         chartInstance.data.datasets[1].data = estacionalitat.aigua.map(e => baseData.aigua * e * costs.aigua * mult.aigua);
@@ -155,7 +164,7 @@ function actualitzarSimulacio() {
     }
 }
 
-// 6. GRÀFIC DE LÍNIES PERSONALITZAT
+// 6. GRÀFIC SENSE TACHADO EN LLEGENDA I AMB ANIMACIÓ FLUIDA
 function inicialitzarGrafic() {
     const ctx = document.getElementById('historicalChart').getContext('2d');
     const mesos = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
@@ -179,7 +188,7 @@ function inicialitzarGrafic() {
                     position: 'bottom',
                     labels: {
                         usePointStyle: true,
-                        // AQUÍ CREEM L'EFECTE DE BORD TRANSPARENT EN COMPTES DE RATLLAT
+                        // Generació de llegenda on evitem que es ratlli la lletra (strikethrough)
                         generateLabels: function(chart) {
                             const datasets = chart.data.datasets;
                             return datasets.map((dataset, i) => {
@@ -189,19 +198,24 @@ function inicialitzarGrafic() {
                                     fillStyle: isHidden ? 'transparent' : dataset.backgroundColor,
                                     strokeStyle: dataset.borderColor,
                                     lineWidth: 2,
-                                    hidden: isHidden,
-                                    textDecoration: 'none', // Treiem el tachado
+                                    hidden: false, // AIXÒ EVITA QUE ES TACHI EL TEXT
                                     datasetIndex: i
                                 };
                             });
                         }
                     },
+                    // Comportament en fer clic a la llegenda
                     onClick: function(e, legendItem, legend) {
                         const index = legendItem.datasetIndex;
                         const ci = legend.chart;
-                        if (ci.isDatasetVisible(index)) { ci.hide(index); }
-                        else { ci.show(index); }
-                        ci.update();
+
+                        // Ocultem o mostrem la línia. Les funcions hide/show ja inclouen l'animació per defecte.
+                        if (ci.isDatasetVisible(index)) {
+                            ci.hide(index);
+                        } else {
+                            ci.show(index);
+                        }
+                        // Hem eliminat el ci.update() d'aquí per no tallar l'animació nativa.
                     }
                 }
             },
