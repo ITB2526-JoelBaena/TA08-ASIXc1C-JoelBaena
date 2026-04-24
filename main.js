@@ -1,4 +1,3 @@
-// 1. DADES BASE I VARIABLES
 const baseData = { elec: 6000, aigua: 135000, oficina: 215, neteja: 620 };
 const costs = { elec: 0.20, aigua: 0.0025, oficina: 1, neteja: 1 };
 const estacionalitat = {
@@ -11,20 +10,35 @@ const estacionalitat = {
 let modeActual = 'any';
 let chartInstance = null;
 
-// Límits del calendari de projecció (Fi ITB Leaks + 3 anys)
-const MIN_PROJ = new Date('2025-01-17');
-const MAX_PROJ = new Date('2028-01-17');
-
-// 2. INICIALITZACIÓ
 window.onload = () => {
     inicialitzarGrafic();
     actualitzarSimulacio();
 };
 
-// 3. NAVEGACIÓ ENTRE PÀGINES
-function canviarVista(vistaId) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(vistaId).classList.add('active');
+function setPeriode(mode) {
+    modeActual = mode;
+    document.getElementById('btn-any').classList.toggle('active', mode === 'any');
+    document.getElementById('btn-curs').classList.toggle('active', mode === 'curs');
+    actualitzarSimulacio();
+}
+
+function setProjeccioRapida(anys) {
+    const inici = new Date(document.getElementById('data-inici').value);
+    const fi = new Date(inici);
+    fi.setFullYear(inici.getFullYear() + anys);
+    
+    document.getElementById('data-fi').value = fi.toISOString().split('T')[0];
+    
+    document.getElementById('btn-proj-1').classList.toggle('active', anys === 1);
+    document.getElementById('btn-proj-3').classList.toggle('active', anys === 3);
+    
+    actualitzarSimulacio();
+}
+
+function calcularPersonalitzat() {
+    document.getElementById('btn-proj-1').classList.remove('active');
+    document.getElementById('btn-proj-3').classList.remove('active');
+    actualitzarSimulacio();
 }
 
 function obrirPestanya(tabId) {
@@ -34,219 +48,89 @@ function obrirPestanya(tabId) {
     event.currentTarget.classList.add('active');
 }
 
-// 4. CONTROL DEL TEMPS
-function setPeriode(mode) {
-    modeActual = mode;
-    document.getElementById('btn-any').classList.remove('active');
-    document.getElementById('btn-curs').classList.remove('active');
-    
-    if (mode === 'any') document.getElementById('btn-any').classList.add('active');
-    if (mode === 'curs') document.getElementById('btn-curs').classList.add('active');
-    
-    actualitzarSimulacio();
-}
-
-// 5. PROJECCIÓ RÀPIDA (Botons 1 o 3 anys)
-function setProjeccioRapida(anys) {
-    // Marcar botó
-    document.getElementById('btn-proj-1').classList.remove('active');
-    document.getElementById('btn-proj-3').classList.remove('active');
-    document.getElementById('btn-proj-' + anys).classList.add('active');
-
-    // Agafar data d'inici i sumar els anys
-    let d1 = document.getElementById('data-inici').value;
-    if(!d1) { 
-        d1 = '2025-01-17'; 
-        document.getElementById('data-inici').value = d1; 
-    }
-    
-    let startDate = new Date(d1);
-    startDate.setFullYear(startDate.getFullYear() + anys);
-    
-    // Formatejar i aplicar a data de fi
-    let dd = String(startDate.getDate()).padStart(2, '0');
-    let mm = String(startDate.getMonth() + 1).padStart(2, '0');
-    let yyyy = startDate.getFullYear();
-    document.getElementById('data-fi').value = `${yyyy}-${mm}-${dd}`;
-    
-    actualitzarSimulacio();
-}
-
-// Funció per quan es pica el botó "Calcular" del calendari manual
-function calcularPersonalitzat() {
-    document.getElementById('btn-proj-1').classList.remove('active');
-    document.getElementById('btn-proj-3').classList.remove('active');
-    actualitzarSimulacio();
-}
-
-// 6. MOTOR DE CÀLCUL PRINCIPAL
 function actualitzarSimulacio() {
     let raw = { elec: 0, aigua: 0, oficina: 0, neteja: 0 };
-    let titol = "";
-
-    // 6.1 Base de càlcul (Depèn del botó esquerre: Any o Curs)
+    
+    // 1. Càlcul Base segons període
     if (modeActual === 'any') {
-        titol = "Base: Any Complet";
         Object.keys(raw).forEach(k => {
             for(let m=0; m<12; m++) raw[k] += baseData[k] * estacionalitat[k][m];
         });
-    } 
-    else if (modeActual === 'curs') {
-        titol = "Base: Curs Escolar";
-        let mesos = [8,9,10,11,0,1,2,3,4,5];
+    } else {
+        let mesosCurs = [8,9,10,11,0,1,2,3,4,5]; // Setembre a Juny
         Object.keys(raw).forEach(k => {
-            mesos.forEach(m => raw[k] += baseData[k] * estacionalitat[k][m]);
+            mesosCurs.forEach(m => raw[k] += baseData[k] * estacionalitat[k][m]);
         });
-    } 
-
-    // 6.2 Multiplicador de Projecció (Depèn del calendari central)
-    let d1 = document.getElementById('data-inici').value;
-    let d2 = document.getElementById('data-fi').value;
-    let anysProjeccio = 1;
-    let textProjeccio = "1 any";
-
-    if(d1 && d2) {
-        let date1 = new Date(d1);
-        let date2 = new Date(d2);
-        
-        if(date1 < MIN_PROJ || date2 > MAX_PROJ) {
-            document.getElementById('titol-resultats').innerText = "Error: El calendari es limita a 2025-2028";
-            return;
-        }
-
-        let dies = (date2 - date1) / 86400000;
-        if(dies > 0) {
-            anysProjeccio = dies / 365.25;
-            textProjeccio = `${(dies/365.25).toFixed(1)} anys`;
-        } else if (dies === 0) {
-            anysProjeccio = 1 / 365.25;
-            textProjeccio = "1 dia";
-        } else {
-            document.getElementById('titol-resultats').innerText = "Error: Data d'inici posterior a data fi";
-            return;
-        }
     }
 
-    titol += ` | Projecció a: ${textProjeccio}`;
-
-    // Multiplicar base pels anys
-    Object.keys(raw).forEach(k => { raw[k] *= anysProjeccio; });
-    let totalOriginal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
-
-    // 6.3 Mesures d'estalvi interactives
-    let pLed = document.getElementById('sl-led').value; document.getElementById('val-led').innerText = pLed;
-    let pSolar = document.getElementById('sl-solar').value; document.getElementById('val-solar').innerText = pSolar;
-    let pPluja = document.getElementById('sl-pluja').value; document.getElementById('val-pluja').innerText = pPluja;
-    let pMoodle = document.getElementById('sl-moodle').value; document.getElementById('val-moodle').innerText = pMoodle;
-    let pAsseca = document.getElementById('sl-asseca').value; document.getElementById('val-asseca').innerText = pAsseca;
-
-    let mult = { elec: 1, aigua: 1, oficina: 1, neteja: 1 };
-
-    mult.elec *= 1 - ((pLed * 0.20) / 100); 
-    mult.elec *= 1 - ((pSolar * 1) / 100); 
-    if(document.getElementById('chk-elec-pc').checked) mult.elec *= 0.85;
-    if(document.getElementById('chk-elec-sensors').checked) mult.elec *= 0.95;
-    if(document.getElementById('chk-elec-clima').checked) mult.elec *= 0.90;
-    mult.elec *= 1 + ((pAsseca * 0.05) / 100); 
+    // 2. Multiplicador per temps de projecció
+    const d1 = new Date(document.getElementById('data-inici').value);
+    const d2 = new Date(document.getElementById('data-fi').value);
+    const diffTemps = d2 - d1;
+    const anysProjeccio = Math.max(0, diffTemps / (1000 * 60 * 60 * 24 * 365.25));
     
-    mult.aigua *= 1 - ((pPluja * 1) / 100); 
-    if(document.getElementById('chk-aigua-aire').checked) mult.aigua *= 0.85;
-    if(document.getElementById('chk-aigua-wc').checked) mult.aigua *= 0.90;
-    if(document.getElementById('chk-aigua-sensors').checked) mult.aigua *= 0.90;
-    if(document.getElementById('chk-aigua-fuites').checked) mult.aigua *= 0.98;
+    Object.keys(raw).forEach(k => raw[k] *= anysProjeccio);
+    const costOriginalTotal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
 
-    mult.oficina *= 1 - ((pMoodle * 0.50) / 100); 
-    if(document.getElementById('chk-ofi-retoladors').checked) mult.oficina *= 0.95;
-    if(document.getElementById('chk-ofi-reciclat').checked) mult.oficina *= 0.90;
-    if(document.getElementById('chk-ofi-bn').checked) mult.oficina *= 0.85;
-    if(document.getElementById('chk-ofi-signatures').checked) mult.oficina *= 0.90;
+    // 3. Aplicació de mesures
+    let mElec = 1, mAigua = 1, mOfi = 1, mNet = 1;
+    
+    // Electricitat
+    const pLed = document.getElementById('sl-led').value;
+    document.getElementById('val-led').innerText = pLed;
+    mElec *= (1 - (pLed * 0.2 / 100));
+    if(document.getElementById('chk-elec-pc').checked) mElec *= 0.85;
+    if(document.getElementById('chk-elec-clima').checked) mElec *= 0.90;
 
-    mult.neteja *= 1 - ((pAsseca * 0.40) / 100); 
-    if(document.getElementById('chk-net-granel').checked) mult.neteja *= 0.85;
-    if(document.getElementById('chk-net-eco').checked) mult.neteja *= 0.95;
-    if(document.getElementById('chk-net-baietes').checked) mult.neteja *= 0.95;
-    if(document.getElementById('chk-net-rutes').checked) mult.neteja *= 0.95;
+    // Aigua
+    if(document.getElementById('chk-aigua-aire').checked) mAigua *= 0.85;
+    const pPluja = document.getElementById('sl-pluja').value;
+    document.getElementById('val-pluja').innerText = pPluja;
+    mAigua *= (1 - (pPluja / 100));
 
-    // Apliquem l'estalvi final als resultats
-    raw.elec *= mult.elec;
-    raw.aigua *= mult.aigua;
-    raw.oficina *= mult.oficina;
-    raw.neteja *= mult.neteja;
+    // Aplicar estalvis
+    raw.elec *= mElec;
+    raw.aigua *= mAigua;
+    raw.oficina *= (1 - (document.getElementById('sl-moodle').value * 0.5 / 100));
+    if(document.getElementById('chk-net-eco').checked) raw.neteja *= 0.95;
 
-    // 6.4 Actualitzar pantalla HTML
-    document.getElementById('titol-resultats').innerText = titol;
-    document.getElementById('res-elec').innerText = raw.elec.toLocaleString('ca-ES', {maximumFractionDigits: 0});
-    document.getElementById('res-aigua').innerText = raw.aigua.toLocaleString('ca-ES', {maximumFractionDigits: 0});
-    document.getElementById('res-oficina').innerText = raw.oficina.toLocaleString('ca-ES', {maximumFractionDigits: 2});
-    document.getElementById('res-neteja').innerText = raw.neteja.toLocaleString('ca-ES', {maximumFractionDigits: 2});
+    // 4. Mostrar Resultats
+    document.getElementById('res-elec').innerText = Math.round(raw.elec).toLocaleString();
+    document.getElementById('res-aigua').innerText = Math.round(raw.aigua).toLocaleString();
+    document.getElementById('res-oficina').innerText = Math.round(raw.oficina).toLocaleString();
+    document.getElementById('res-neteja').innerText = Math.round(raw.neteja).toLocaleString();
 
-    let totalNou = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
-    let percentatgeEstalvi = 0;
-    if(totalOriginal > 0) percentatgeEstalvi = ((totalOriginal - totalNou) / totalOriginal) * 100;
-    document.getElementById('res-estalvi').innerText = `-${percentatgeEstalvi.toFixed(1)}%`;
+    const costFinalTotal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
+    const estalviPercent = costOriginalTotal > 0 ? ((1 - (costFinalTotal / costOriginalTotal)) * 100).toFixed(1) : 0;
+    document.getElementById('res-estalvi').innerText = estalviPercent + "%";
+    document.getElementById('titol-resultats').innerText = `Projecció a ${anysProjeccio.toFixed(1)} anys`;
 
-    // 6.5 Actualitzar el gràfic aplicant la projecció i mesures
-    if(chartInstance) {
-        chartInstance.data.datasets[0].data = estacionalitat.elec.map(e => baseData.elec * e * costs.elec * mult.elec * anysProjeccio);
-        chartInstance.data.datasets[1].data = estacionalitat.aigua.map(e => baseData.aigua * e * costs.aigua * mult.aigua * anysProjeccio);
-        chartInstance.data.datasets[2].data = estacionalitat.oficina.map(e => baseData.oficina * e * mult.oficina * anysProjeccio);
-        chartInstance.data.datasets[3].data = estacionalitat.neteja.map(e => baseData.neteja * e * mult.neteja * anysProjeccio);
-        chartInstance.update(); 
-    }
+    actualitzarGrafic(anysProjeccio, mElec, mAigua);
 }
 
-// 7. INICIALITZACIÓ DEL GRÀFIC
 function inicialitzarGrafic() {
     const ctx = document.getElementById('historicalChart').getContext('2d');
-    const mesos = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
-    
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: mesos,
-            datasets: [
-                { label: 'Electricitat', data: [], borderColor: '#eab308', backgroundColor: '#eab308', borderWidth: 2, tension: 0.4, fill: false },
-                { label: 'Aigua', data: [], borderColor: '#0ea5e9', backgroundColor: '#0ea5e9', borderWidth: 2, tension: 0.4, fill: false },
-                { label: 'Oficina', data: [], borderColor: '#ea580c', backgroundColor: '#ea580c', borderWidth: 2, tension: 0.4, fill: false },
-                { label: 'Neteja', data: [], borderColor: '#0d9488', backgroundColor: '#0d9488', borderWidth: 2, tension: 0.4, fill: false }
-            ]
+            labels: ['Actual', 'Projectat'],
+            datasets: [{
+                label: 'Cost Total (€)',
+                data: [0, 0],
+                borderColor: '#1e3a8a',
+                backgroundColor: 'rgba(30, 58, 138, 0.1)',
+                fill: true
+            }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { 
-                    position: 'bottom', 
-                    labels: { 
-                        usePointStyle: true,
-                        generateLabels: function(chart) {
-                            const datasets = chart.data.datasets;
-                            return datasets.map((dataset, i) => {
-                                const isHidden = !chart.isDatasetVisible(i);
-                                return {
-                                    text: dataset.label,
-                                    fillStyle: isHidden ? 'transparent' : dataset.backgroundColor,
-                                    strokeStyle: dataset.borderColor,
-                                    lineWidth: 2,
-                                    hidden: false, 
-                                    datasetIndex: i
-                                };
-                            });
-                        }
-                    },
-                    onClick: function(e, legendItem, legend) {
-                        const index = legendItem.datasetIndex;
-                        const ci = legend.chart;
-                        if (ci.isDatasetVisible(index)) { ci.hide(index); } 
-                        else { ci.show(index); }
-                    }
-                }
-            },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#e2e8f0' }, title: { display: true, text: 'Despesa Estimada (€)' } },
-                x: { grid: { display: false } }
-            },
-            interaction: { mode: 'index', intersect: false }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
+}
+
+function actualitzarGrafic(anys, mElec, mAigua) {
+    if(!chartInstance) return;
+    const costBaseAnual = (baseData.elec * 12 * costs.elec) + (baseData.aigua * 12 * costs.aigua) + (baseData.oficina * 12) + (baseData.neteja * 12);
+    const costFutur = costBaseAnual * anys * (mElec * 0.4 + mAigua * 0.6); // Simplificació per la corba
+    
+    chartInstance.data.datasets[0].data = [costBaseAnual, costFutur];
+    chartInstance.update();
 }
