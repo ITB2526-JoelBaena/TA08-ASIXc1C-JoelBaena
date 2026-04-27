@@ -11,29 +11,34 @@
 
     <section id="view-calculadora" class="view active">
         <div class="dashboard-header">
-            <h2 class="text-blue">Calculadora</h2>
-            <button type="button" class="btn-primary" onclick="canviarVista('view-info')">Veure Detalls de les Mesures</button>
-        </div>
+            <h2 class="text-blue">Calculadora de Sostenibilitat</h2>
+            </div>
 
         <div class="dashboard-grid">
             
             <div class="panel-box border-top-blue grid-config">
                 <h3 class="title-blue">1. Configuració del Període Base</h3>
                 <div class="time-controls">
-                    <button type="button" class="btn-outline-blue active" id="btn-any" onclick="setPeriode('any')">🌍 Any Complet (12m)</button>
-                    <button type="button" class="btn-outline-blue" id="btn-curs" onclick="setPeriode('curs')">🎓 Curs Escolar (Set-Jun)</button>
+                    <button type="button" class="btn-time" onclick="calcularTemps('any')">🌍 Any Complet (12m)</button>
+                    <button type="button" class="btn-time" onclick="calcularTemps('curs')">🎓 Curs Escolar (Set-Jun)</button>
                 </div>
             </div>
 
             <div class="panel-box border-top-blue grid-proj">
                 <h3 class="title-blue">2. Projecció a Futur (Màxim 3 Anys)</h3>
                 <p class="small-text">Des de l'últim registre auditat (17/01/2025) fins al 17/01/2028.</p>
+                
+                <div class="proj-controls" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button type="button" class="btn-time" style="flex:1;" onclick="calcularTemps('proj1')">+ 1 Any</button>
+                    <button type="button" class="btn-time" style="flex:1;" onclick="calcularTemps('proj3')">+ 3 Anys</button>
+                </div>
+
                 <div class="custom-date">
                     <div class="date-inputs">
                         <input type="date" id="data-inici" class="input-date" min="2025-01-17" max="2028-01-17" value="2025-01-17">
                         <span>-</span>
                         <input type="date" id="data-fi" class="input-date" min="2025-01-17" max="2028-01-17" value="2026-01-17">
-                        <button type="button" class="btn-primary ml-10" onclick="actualitzarSimulacio()">Calcular</button>
+                        <button type="button" class="btn-primary ml-10" onclick="calcularTemps('custom')">Calcular</button>
                     </div>
                 </div>
             </div>
@@ -131,51 +136,10 @@
                 <div class="savings-card border-top-blue">
                     <h4 class="text-blue">Impacte de les Millores</h4>
                     <div class="savings-val text-blue" id="res-estalvi">0%</div>
-                    <p>Reducció global respecte al consum base, multiplicat pels anys projectats.</p>
+                    <p>Reducció global respecte al consum base del període seleccionat.</p>
                 </div>
             </div>
 
-        </div>
-    </section>
-
-    <section id="view-info" class="view">
-        <div class="container-center scrollable">
-            <div class="info-box border-top-blue">
-                <div class="dashboard-header" style="border: none;">
-                    <h1 class="main-title text-blue">Informació i Mesures de Sostenibilitat</h1>
-                    <button type="button" class="btn-primary" onclick="canviarVista('view-calculadora')">Tornar a la Calculadora</button>
-                </div>
-                <hr>
-                
-                <div class="text-content">
-                    <h3 class="text-theme-elec">⚡ Mesures d'Electricitat</h3>
-                    <p><strong>Lluminàries LED:</strong> La substitució redueix fins a un 20% el consum en il·luminació. <br>
-                    <strong>Apagat Automàtic:</strong> L'ITB compta amb molts PCs; forçar l'apagat de nit estalvia un 15% energètic. <br>
-                    <strong>Sensors / Climatització:</strong> Bloquejar l'AC a 24ºC prevé pics d'energia a l'estiu i l'hivern. <br>
-                    <strong>Plaques Solars:</strong> A llarg termini, produeixen fins al 50% de l'energia diürna necessària.</p>
-                </div>
-
-                <div class="text-content">
-                    <h3 class="text-theme-aigua">💧 Mesures d'Aigua</h3>
-                    <p><strong>Airejadors:</strong> Barregen aire i aigua, reduint un 15% el cabal sense perdre pressió a les aixetes. <br>
-                    <strong>Doble Descàrrega WC:</strong> Redueix de 6 a 3 litres el consum per descàrrega als lavabos del centre. <br>
-                    <strong>Aigua de pluja:</strong> Útil per fregar i netejar patis, estalviant fins a un 30% d'aigua potable xarxa.</p>
-                </div>
-
-                <div class="text-content">
-                    <h3 class="text-theme-oficina">🖨️ Mesures d'Oficina</h3>
-                    <p><strong>Zero Paper / Moodle:</strong> Centralitzar els lliuraments evita la compra massiva de folis (estalvi del 50%). <br>
-                    <strong>Blanc i Negre:</strong> Evita la despesa innecessària en cartutxos de color per exàmens i circulars. <br>
-                    <strong>Retoladors recarregables:</strong> Disminueix dramàticament l'ús de plàstics d'un sol ús a les aules.</p>
-                </div>
-
-                <div class="text-content">
-                    <h3 class="text-theme-neteja">🧹 Mesures de Neteja</h3>
-                    <p><strong>Assecadors Elèctrics:</strong> Elimina el cost del paper eixugamans (-40% cost neteja), tot i apujar lleugerament la llum. <br>
-                    <strong>Sabons a granel:</strong> Reducció d'envasos plàstics i estalvi econòmic del 15%. <br>
-                    <strong>Certificació Ecolabel:</strong> Assegura que els químics no contaminen la xarxa d'aigües residuals de Barcelona.</p>
-                </div>
-            </div>
         </div>
     </section>
 
