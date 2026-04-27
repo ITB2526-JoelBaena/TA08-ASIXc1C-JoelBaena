@@ -11,7 +11,7 @@ const estacionalitat = {
 let modeActual = 'any';
 let chartInstance = null;
 
-// Límits del calendari de projecció (Fi ITB Leaks + 3 anys)
+// Límits del calendari de projecció (Des de fi ITB leaks fins 3 anys)
 const MIN_PROJ = new Date('2025-01-17');
 const MAX_PROJ = new Date('2028-01-17');
 
@@ -43,42 +43,12 @@ function setPeriode(mode) {
     actualitzarSimulacio();
 }
 
-// 5. PROJECCIÓ RÀPIDA AMB BOTONS (1 o 3 anys)
-function setProjeccioRapida(anys) {
-    document.getElementById('btn-proj-1').classList.remove('active');
-    document.getElementById('btn-proj-3').classList.remove('active');
-    if(anys === 1) document.getElementById('btn-proj-1').classList.add('active');
-    if(anys === 3) document.getElementById('btn-proj-3').classList.add('active');
-
-    // Agafem la data d'inici i sumem l'any exacte
-    let d1 = document.getElementById('data-inici').value;
-    if(!d1) d1 = '2025-01-17';
-    
-    let startDate = new Date(d1);
-    startDate.setFullYear(startDate.getFullYear() + anys);
-    
-    // Formategem a YYYY-MM-DD per l'input html
-    let dd = String(startDate.getDate()).padStart(2, '0');
-    let mm = String(startDate.getMonth() + 1).padStart(2, '0');
-    let yyyy = startDate.getFullYear();
-    
-    document.getElementById('data-fi').value = `${yyyy}-${mm}-${dd}`;
-    
-    actualitzarSimulacio();
-}
-
-// 6. MOTOR DE CÀLCUL PRINCIPAL
+// 5. MOTOR DE CÀLCUL PRINCIPAL
 function actualitzarSimulacio() {
     let raw = { elec: 0, aigua: 0, oficina: 0, neteja: 0 };
     let titol = "";
 
-    // Si modifiquem manualment la data, desactivem els botons ràpids per coherència visual
-    if(event && event.type === 'click' && event.target.innerText === 'Calcular') {
-        document.getElementById('btn-proj-1').classList.remove('active');
-        document.getElementById('btn-proj-3').classList.remove('active');
-    }
-
-    // 6.1 Càlcul base
+    // 5.1 Càlcul base d'un any o un curs escolar
     if (modeActual === 'any') {
         titol = "Base: Any Complet";
         Object.keys(raw).forEach(k => {
@@ -93,7 +63,7 @@ function actualitzarSimulacio() {
         });
     } 
 
-    // 6.2 Lògica de temps projectat pel calendari
+    // 5.2 Multiplicador de Projecció Temporal
     let d1 = document.getElementById('data-inici').value;
     let d2 = document.getElementById('data-fi').value;
     let anysProjeccio = 1;
@@ -104,7 +74,7 @@ function actualitzarSimulacio() {
         let date2 = new Date(d2);
         
         if(date1 < MIN_PROJ || date2 > MAX_PROJ) {
-            document.getElementById('titol-resultats').innerText = "Error: El calendari es limita a 2025-2028";
+            document.getElementById('titol-resultats').innerText = "Error: La projecció només és vàlida de 17/01/25 a 17/01/28";
             return;
         }
 
@@ -123,10 +93,12 @@ function actualitzarSimulacio() {
 
     titol += ` | Projecció: ${textProjeccio}`;
 
+    // Multipliquem la base pels anys de projecció per calcular el cost futur
     Object.keys(raw).forEach(k => { raw[k] *= anysProjeccio; });
+
     let totalOriginal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
 
-    // 6.3 Mesures
+    // 5.3 Multiplicadors d'estalvi de les mesures
     let pLed = document.getElementById('sl-led').value; document.getElementById('val-led').innerText = pLed;
     let pSolar = document.getElementById('sl-solar').value; document.getElementById('val-solar').innerText = pSolar;
     let pPluja = document.getElementById('sl-pluja').value; document.getElementById('val-pluja').innerText = pPluja;
@@ -165,7 +137,7 @@ function actualitzarSimulacio() {
     raw.oficina *= mult.oficina;
     raw.neteja *= mult.neteja;
 
-    // 6.4 Renderitzat
+    // 5.4 Renderitzat de Resultats a la Pantalla
     document.getElementById('titol-resultats').innerText = titol;
     document.getElementById('res-elec').innerText = raw.elec.toLocaleString('ca-ES', {maximumFractionDigits: 0});
     document.getElementById('res-aigua').innerText = raw.aigua.toLocaleString('ca-ES', {maximumFractionDigits: 0});
@@ -177,6 +149,7 @@ function actualitzarSimulacio() {
     if(totalOriginal > 0) percentatgeEstalvi = ((totalOriginal - totalNou) / totalOriginal) * 100;
     document.getElementById('res-estalvi').innerText = `-${percentatgeEstalvi.toFixed(1)}%`;
 
+    // 5.5 Gràfica projectada en el temps
     if(chartInstance) {
         chartInstance.data.datasets[0].data = estacionalitat.elec.map(e => baseData.elec * e * costs.elec * mult.elec * anysProjeccio);
         chartInstance.data.datasets[1].data = estacionalitat.aigua.map(e => baseData.aigua * e * costs.aigua * mult.aigua * anysProjeccio);
@@ -186,7 +159,7 @@ function actualitzarSimulacio() {
     }
 }
 
-// 7. GRÀFIC
+// 6. GRÀFIC (Sense tachado i animació per defecte de Chart.js activada)
 function inicialitzarGrafic() {
     const ctx = document.getElementById('historicalChart').getContext('2d');
     const mesos = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
