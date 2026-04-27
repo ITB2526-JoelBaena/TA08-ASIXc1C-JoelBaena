@@ -21,7 +21,7 @@ window.onload = () => {
     actualitzarSimulacio();
 };
 
-// 3. NAVEGACIÓ ENTRE PÀGINES
+// 3. NAVEGACIÓ
 function canviarVista(vistaId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(vistaId).classList.add('active');
@@ -37,45 +37,33 @@ function obrirPestanya(tabId) {
 // 4. CONTROL DEL TEMPS
 function setPeriode(mode) {
     modeActual = mode;
-    document.getElementById('btn-any').classList.remove('active');
-    document.getElementById('btn-curs').classList.remove('active');
-    
+    document.querySelectorAll('.time-controls button').forEach(b => b.classList.remove('active'));
     if (mode === 'any') document.getElementById('btn-any').classList.add('active');
     if (mode === 'curs') document.getElementById('btn-curs').classList.add('active');
-    
     actualitzarSimulacio();
 }
 
-// 5. PROJECCIÓ RÀPIDA (Botons 1 o 3 anys)
+// 5. PROJECCIÓ RÀPIDA AMB BOTONS (1 o 3 anys)
 function setProjeccioRapida(anys) {
-    // Marcar botó
     document.getElementById('btn-proj-1').classList.remove('active');
     document.getElementById('btn-proj-3').classList.remove('active');
-    document.getElementById('btn-proj-' + anys).classList.add('active');
+    if(anys === 1) document.getElementById('btn-proj-1').classList.add('active');
+    if(anys === 3) document.getElementById('btn-proj-3').classList.add('active');
 
-    // Agafar data d'inici i sumar els anys
+    // Agafem la data d'inici i sumem l'any exacte
     let d1 = document.getElementById('data-inici').value;
-    if(!d1) { 
-        d1 = '2025-01-17'; 
-        document.getElementById('data-inici').value = d1; 
-    }
+    if(!d1) d1 = '2025-01-17';
     
     let startDate = new Date(d1);
     startDate.setFullYear(startDate.getFullYear() + anys);
     
-    // Formatejar i aplicar a data de fi
+    // Formategem a YYYY-MM-DD per l'input html
     let dd = String(startDate.getDate()).padStart(2, '0');
     let mm = String(startDate.getMonth() + 1).padStart(2, '0');
     let yyyy = startDate.getFullYear();
+    
     document.getElementById('data-fi').value = `${yyyy}-${mm}-${dd}`;
     
-    actualitzarSimulacio();
-}
-
-// Funció per quan es pica el botó "Calcular" del calendari manual
-function calcularPersonalitzat() {
-    document.getElementById('btn-proj-1').classList.remove('active');
-    document.getElementById('btn-proj-3').classList.remove('active');
     actualitzarSimulacio();
 }
 
@@ -84,7 +72,13 @@ function actualitzarSimulacio() {
     let raw = { elec: 0, aigua: 0, oficina: 0, neteja: 0 };
     let titol = "";
 
-    // 6.1 Base de càlcul (Depèn del botó esquerre: Any o Curs)
+    // Si modifiquem manualment la data, desactivem els botons ràpids per coherència visual
+    if(event && event.type === 'click' && event.target.innerText === 'Calcular') {
+        document.getElementById('btn-proj-1').classList.remove('active');
+        document.getElementById('btn-proj-3').classList.remove('active');
+    }
+
+    // 6.1 Càlcul base
     if (modeActual === 'any') {
         titol = "Base: Any Complet";
         Object.keys(raw).forEach(k => {
@@ -99,7 +93,7 @@ function actualitzarSimulacio() {
         });
     } 
 
-    // 6.2 Multiplicador de Projecció (Depèn del calendari central)
+    // 6.2 Lògica de temps projectat pel calendari
     let d1 = document.getElementById('data-inici').value;
     let d2 = document.getElementById('data-fi').value;
     let anysProjeccio = 1;
@@ -127,13 +121,12 @@ function actualitzarSimulacio() {
         }
     }
 
-    titol += ` | Projecció a: ${textProjeccio}`;
+    titol += ` | Projecció: ${textProjeccio}`;
 
-    // Multiplicar base pels anys
     Object.keys(raw).forEach(k => { raw[k] *= anysProjeccio; });
     let totalOriginal = (raw.elec * costs.elec) + (raw.aigua * costs.aigua) + raw.oficina + raw.neteja;
 
-    // 6.3 Mesures d'estalvi interactives
+    // 6.3 Mesures
     let pLed = document.getElementById('sl-led').value; document.getElementById('val-led').innerText = pLed;
     let pSolar = document.getElementById('sl-solar').value; document.getElementById('val-solar').innerText = pSolar;
     let pPluja = document.getElementById('sl-pluja').value; document.getElementById('val-pluja').innerText = pPluja;
@@ -167,13 +160,12 @@ function actualitzarSimulacio() {
     if(document.getElementById('chk-net-baietes').checked) mult.neteja *= 0.95;
     if(document.getElementById('chk-net-rutes').checked) mult.neteja *= 0.95;
 
-    // Apliquem l'estalvi final als resultats
     raw.elec *= mult.elec;
     raw.aigua *= mult.aigua;
     raw.oficina *= mult.oficina;
     raw.neteja *= mult.neteja;
 
-    // 6.4 Actualitzar pantalla HTML
+    // 6.4 Renderitzat
     document.getElementById('titol-resultats').innerText = titol;
     document.getElementById('res-elec').innerText = raw.elec.toLocaleString('ca-ES', {maximumFractionDigits: 0});
     document.getElementById('res-aigua').innerText = raw.aigua.toLocaleString('ca-ES', {maximumFractionDigits: 0});
@@ -185,7 +177,6 @@ function actualitzarSimulacio() {
     if(totalOriginal > 0) percentatgeEstalvi = ((totalOriginal - totalNou) / totalOriginal) * 100;
     document.getElementById('res-estalvi').innerText = `-${percentatgeEstalvi.toFixed(1)}%`;
 
-    // 6.5 Actualitzar el gràfic aplicant la projecció i mesures
     if(chartInstance) {
         chartInstance.data.datasets[0].data = estacionalitat.elec.map(e => baseData.elec * e * costs.elec * mult.elec * anysProjeccio);
         chartInstance.data.datasets[1].data = estacionalitat.aigua.map(e => baseData.aigua * e * costs.aigua * mult.aigua * anysProjeccio);
@@ -195,7 +186,7 @@ function actualitzarSimulacio() {
     }
 }
 
-// 7. INICIALITZACIÓ DEL GRÀFIC
+// 7. GRÀFIC
 function inicialitzarGrafic() {
     const ctx = document.getElementById('historicalChart').getContext('2d');
     const mesos = ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Des'];
