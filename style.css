@@ -6,7 +6,6 @@
     --text-main: #1e293b;
     --text-muted: #64748b;
     --border-color: #cbd5e1;
-
     --theme-elec: #eab308;  
     --theme-aigua: #0ea5e9;  
     --theme-oficina: #ea580c; 
@@ -21,8 +20,9 @@ body {
     color: var(--text-main);
     margin: 0;
     padding: 0;
-    height: 100vh;
-    overflow: hidden; 
+    min-height: 100vh;
+    overflow-y: auto; /* Permet el scroll vertical si la pantalla és petita */
+    overflow-x: hidden;
 }
 
 .text-blue { color: var(--primary); }
@@ -38,52 +38,17 @@ body {
 .text-theme-neteja { color: var(--theme-neteja) !important; }
 .border-theme-neteja { border-top: 4px solid var(--theme-neteja); border-bottom: 1px dashed var(--theme-neteja); }
 
-/* Vistes */
-.view { display: none; height: 100vh; width: 100vw; }
-.view.active { display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.view { display: none; min-height: 100vh; width: 100%; padding: 20px; }
+.view.active { display: block; }
 
-/* Botons generals */
-button { font-family: inherit; cursor: pointer; border: none; border-radius: 4px; transition: 0.2s; }
-.btn-primary { background: var(--primary); color: white; font-weight: bold; padding: 10px 20px; transition: transform 0.1s, background 0.2s; }
-.btn-primary:hover { background: var(--primary-light); }
-.btn-primary:active { transform: scale(0.95); }
-.ml-10 { margin-left: 10px; }
+.dashboard-header { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
 
-/* NOUS BOTONS DE TEMPS (Unificats i amb animació de clic) */
-.btn-time {
-    background: var(--surface);
-    border: 2px solid var(--primary);
-    color: var(--primary);
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
-    cursor: pointer;
-}
-.btn-time:hover {
-    background: #eff6ff;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.15);
-}
-.btn-time:active {
-    transform: scale(0.95); /* Efecte polsació */
-    background: var(--primary-light);
-    color: white;
-}
-
-/* DASHBOARD CALCULADORA */
-#view-calculadora { display: flex; flex-direction: column; padding: 20px; }
-.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
-.dashboard-header h2 { margin: 0; font-size: 1.8em; }
-
-/* Grid 3 columnes */
+/* GRID PRINCIPAL (Adaptable) */
 .dashboard-grid { 
     display: grid; 
     grid-template-columns: 1fr 1fr 0.8fr; 
     grid-template-rows: auto 1fr; 
     gap: 20px; 
-    flex-grow: 1; 
-    min-height: 0; 
 }
 
 .panel-box { background: var(--surface); border-radius: 6px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
@@ -95,51 +60,69 @@ button { font-family: inherit; cursor: pointer; border: none; border-radius: 4px
 .grid-chart { grid-column: 1; grid-row: 2; }
 .grid-meas { grid-column: 2; grid-row: 2; }
 
-/* Controls Interiors */
-.time-controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; align-items: center; justify-content: center; flex-grow: 1;} 
-.time-controls .btn-time { width: 80%; padding: 12px; font-size: 1.05em; }
+/* AJUST DELS BOTONS DEL PUNT 1 (Centrat vertical perfecte) */
+.time-controls { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    align-items: center; 
+    justify-content: center; 
+    flex-grow: 1;
+    margin-top: 15px; /* Empeny una mica avall per alinear visualment */
+}
 
-.custom-date label { font-size: 0.9em; display: block; margin-bottom: 5px;}
+.btn-time {
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 85%;
+    transition: transform 0.1s;
+}
+.btn-time:active { transform: scale(0.95); background: #eff6ff; }
+
+.proj-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+.proj-controls .btn-time { flex: 1; width: auto; }
+
 .date-inputs { display: flex; gap: 5px; align-items: center; }
-.input-date { padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; width: 100%;}
+.input-date { padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; width: 100%; }
+.btn-primary { background: var(--primary); color: white; border-radius: 4px; padding: 8px 15px; font-weight: bold; }
 
-/* Gràfic */
-.chart-container { position: relative; flex-grow: 1; width: 100%; min-height: 250px; margin-top: 10px;}
+.chart-container { position: relative; flex-grow: 1; min-height: 250px; }
 
-/* Pestanyes Mesures */
-.tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
-.tab-btn { background: transparent; padding: 10px 15px; border-bottom: 3px solid transparent; border-radius: 0; flex-grow: 1; transition: opacity 0.3s; }
-.tab-btn:hover { background: var(--bg-dark); }
-.tab-btn.tab-elec { color: var(--theme-elec); border-bottom-color: var(--theme-elec); opacity: 0.4; }
-.tab-btn.tab-aigua { color: var(--theme-aigua); border-bottom-color: var(--theme-aigua); opacity: 0.4; }
-.tab-btn.tab-oficina { color: var(--theme-oficina); border-bottom-color: var(--theme-oficina); opacity: 0.4; }
-.tab-btn.tab-neteja { color: var(--theme-neteja); border-bottom-color: var(--theme-neteja); opacity: 0.4; }
+/* Tabs */
+.tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 10px; }
+.tab-btn { background: transparent; padding: 10px; border-bottom: 3px solid transparent; flex-grow: 1; cursor: pointer; opacity: 0.5; font-size: 0.9em;}
 .tab-btn.active { opacity: 1; font-weight: bold; }
+.tab-btn.tab-elec { color: var(--theme-elec); border-bottom-color: var(--theme-elec); }
+.tab-btn.tab-aigua { color: var(--theme-aigua); border-bottom-color: var(--theme-aigua); }
+.tab-btn.tab-oficina { color: var(--theme-oficina); border-bottom-color: var(--theme-oficina); }
+.tab-btn.tab-neteja { color: var(--theme-neteja); border-bottom-color: var(--theme-neteja); }
 
-.tab-content-area { flex-grow: 1; display: flex; flex-direction: column; }
-.tab-panel { display: none; flex-direction: column; justify-content: space-evenly; flex-grow: 1; padding: 10px 5px; }
-.tab-panel.active { display: flex; animation: fadeIn 0.2s ease; }
+.tab-panel { display: none; flex-direction: column; gap: 12px; padding: 10px 0; }
+.tab-panel.active { display: flex; }
 
-.measure-slider label { display: block; font-size: 0.95em; margin-bottom: 5px; font-weight: bold;}
-.measure-slider input[type=range] { width: 100%; cursor: pointer; }
-.measure-toggle label { display: flex; align-items: center; gap: 10px; font-size: 0.95em; cursor: pointer; }
-.measure-toggle input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+.measure-slider label, .measure-toggle label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; cursor: pointer;}
+.measure-toggle label { display: flex; align-items: center; gap: 10px; }
 
-#tab-elec input[type=range], #tab-elec input[type=checkbox] { accent-color: var(--theme-elec); }
-#tab-aigua input[type=range], #tab-aigua input[type=checkbox] { accent-color: var(--theme-aigua); }
-#tab-oficina input[type=range], #tab-oficina input[type=checkbox] { accent-color: var(--theme-oficina); }
-#tab-neteja input[type=range], #tab-neteja input[type=checkbox] { accent-color: var(--theme-neteja); }
+/* Resultats */
+.final-results { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; margin: 15px 0; }
+.res-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f1f5f9; border-radius: 4px; }
+.res-val { font-size: 1.5em; font-weight: bold; }
+.savings-card { background: #eff6ff; padding: 20px; border-radius: 6px; text-align: center; }
+.savings-val { font-size: 2.5em; font-weight: bold; }
 
-/* Resultats Finals */
-.results-box { justify-content: space-between; }
-.final-results { display: flex; flex-direction: column; justify-content: space-evenly; flex-grow: 1; margin-bottom: 20px;}
-.res-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 5px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); background: var(--bg-dark); border-radius: 4px; }
-.res-label { font-weight: bold; font-size: 1.1em; color: var(--text-main); }
-.res-data { text-align: right; }
-.res-val { font-size: 2em; font-weight: bold; margin-right: 5px; }
-.res-unit { font-size: 0.9em; color: var(--text-muted); font-weight: bold;}
-
-.savings-card { background: #eff6ff; padding: 25px; border-radius: 6px; text-align: center; }
-.savings-card h4 { margin: 0 0 10px 0; font-size: 1.2em; }
-.savings-val { font-size: 3em; font-weight: bold; line-height: 1; }
-.savings-card p { margin: 15px 0 0 0; font-size: 0.9em; color: var(--primary); }
+/* --- RESPONSIVE: ADAPTACIÓ PER A MÒVILS I PORTÀTILS PETITS --- */
+@media (max-width: 1024px) {
+    .dashboard-grid { 
+        display: flex; 
+        flex-direction: column; 
+    }
+    .grid-res { order: -1; } /* Posa els resultats a dalt de tot en mòbil */
+    .panel-box { margin-bottom: 10px; }
+    .date-inputs { flex-direction: column; }
+    .btn-time { width: 100%; }
+}
