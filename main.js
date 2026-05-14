@@ -23,25 +23,35 @@ function obrirPestanya(tabId) {
 }
 
 function calcularTemps(mode) {
-    // Resetear siempre a 0 antes de calcular para arreglar el bug de los botones
     let raw = { elec: 0, aigua: 0, oficina: 0, neteja: 0 };
     let factor = 1;
     let titol = "";
 
+    // Calculamos la suma total de la estacionalidad anual para que las mates cuadren siempre
+    let sumEst = {
+        elec: estacionalitat.elec.reduce((a,b)=>a+b,0),
+        aigua: estacionalitat.aigua.reduce((a,b)=>a+b,0),
+        oficina: estacionalitat.oficina.reduce((a,b)=>a+b,0),
+        neteja: estacionalitat.neteja.reduce((a,b)=>a+b,0)
+    };
+
     if (mode === 'any') {
         titol = "Full Year (12 months)";
-        Object.keys(raw).forEach(k => { for(let m=0; m<12; m++) raw[k] += baseData[k] * estacionalitat[k][m]; });
+        Object.keys(raw).forEach(k => { raw[k] = baseData[k] * sumEst[k]; });
     } else if (mode === 'curs') {
         titol = "School Year (Sep-Jun)";
         let mesos = [8,9,10,11,0,1,2,3,4,5];
-        Object.keys(raw).forEach(k => { mesos.forEach(m => raw[k] += baseData[k] * estacionalitat[k][m]); });
+        Object.keys(raw).forEach(k => { 
+            let sumCurs = 0; mesos.forEach(m => sumCurs += estacionalitat[k][m]);
+            raw[k] = baseData[k] * sumCurs; 
+        });
     } else if (mode === 'proj1') {
         titol = "Projection +1 Year";
-        Object.keys(raw).forEach(k => { for(let m=0; m<12; m++) raw[k] += baseData[k] * estacionalitat[k][m]; });
+        Object.keys(raw).forEach(k => { raw[k] = baseData[k] * sumEst[k]; });
     } else if (mode === 'proj3') {
         titol = "Projection +3 Years";
         factor = 3;
-        Object.keys(raw).forEach(k => { for(let m=0; m<12; m++) raw[k] += baseData[k] * estacionalitat[k][m] * 3; });
+        Object.keys(raw).forEach(k => { raw[k] = baseData[k] * sumEst[k] * 3; });
     } else if (mode === 'custom') {
         let d1 = new Date(document.getElementById('data-inici').value);
         let d2 = new Date(document.getElementById('data-fi').value);
@@ -49,7 +59,8 @@ function calcularTemps(mode) {
         if(dies < 0) { alert("Invalid date"); return; }
         factor = dies / 365;
         titol = `Custom Range (${(dies/30).toFixed(1)} months)`;
-        Object.keys(raw).forEach(k => { raw[k] = baseData[k] * 12 * factor; });
+        // AHORA ESTÁ ARREGLADO: Usa la misma base exacta que el +1 Año multiplicada por el factor de tiempo
+        Object.keys(raw).forEach(k => { raw[k] = baseData[k] * sumEst[k] * factor; });
     }
 
     estatTemps = { rawBase: raw, factorGrafic: factor, titol: titol };
